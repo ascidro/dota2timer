@@ -1,10 +1,10 @@
 {
   "uuid": "cf6dfdc6-4285-4ec8-aeac-55f373354143",
-  "shortName": "hello_world",
-  "longName": "hello_world",
-  "companyName": "MakeAwesomeHappen",
+  "shortName": "Dota timer",
+  "longName": "Dota timer",
+  "companyName": "#NSoft",
   "versionCode": 1,
-  "versionLabel": "1.0.0",
+  "versionLabel": "0.0.1",
   "watchapp": {
     "watchface": false
   },
