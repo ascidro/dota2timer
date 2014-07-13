@@ -10,6 +10,12 @@ static Window *window;
 // Layer principal del texto, muestra el tiempo que transcurrió.
 static TextLayer *main_text;
 
+// Layer de texto que solo dice "Roshan".
+static TextLayer *roshan_label;
+
+// Estado de Roshan: muerto, vivo, chances.
+static TextLayer *roshan_status_text;
+
 // Barra que muestra qué hace cada botón.
 static ActionBarLayer *action_bar;
 
@@ -19,15 +25,16 @@ static GBitmap* button_image_roshan;
 static GBitmap* button_image_start;
 static GBitmap* button_image_stop;
 
-// VARIABLES:
+// VARIABLES DE ESTADO:
 // Búfer de texto para el tiempo transcurrido.
 static char buffer[TIME_BUFFER_SIZE];
 
 // Tiempo en el que se inicia el cronómetro.
 static int start_time;
 
-// Indica si el timer arrancó.
+// Estado del timer.
 static bool started;
+static bool paused;
 
 // Tiempo que transcurrió desde el arranque.
 static int elapsed_time;
@@ -44,15 +51,25 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (!started)
     return;
 
+  // Adelantamos el tiempo de arranque para compensar por la pausa.
+  if (paused)
+    start_time++;
+
   elapsed_time = seconds() - start_time;
   int minutes = elapsed_time / 60;
   int seconds = elapsed_time % 60;
-  snprintf(buffer, 6, "%02d:%02d", minutes, seconds);
+
+  if (paused && start_time % 2 == 0)
+    buffer[0] = '\0';
+  else
+    snprintf(buffer, 6, "%02d:%02d", minutes, seconds);
 
   text_layer_set_text(main_text, buffer);
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (paused)
+    return;
   started = !started;
   if (!started) {
     // Desaparecen los iconos de pausa / roshan.
@@ -71,7 +88,16 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //text_layer_set_text(main_text, "Up");
+  paused = !paused;
+  if (paused) {
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_start);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
+    return;
+  }
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_pause);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_roshan);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_stop);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -96,6 +122,22 @@ static void window_load(Window *window) {
   text_layer_set_font(main_text,
       fonts_get_system_font(FONT_KEY_BITHAM_34_MEDIUM_NUMBERS));
   layer_add_child(window_layer, text_layer_get_layer(main_text));
+
+  roshan_label = text_layer_create(
+        (GRect) { .origin = { 0, 50 }, .size = { bounds.size.w - 14, 60 } });
+  text_layer_set_text(roshan_label, "Roshan");
+  text_layer_set_text_alignment(roshan_label, GTextAlignmentCenter);
+  text_layer_set_font(roshan_label,
+      fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+  layer_add_child(window_layer, text_layer_get_layer(roshan_label));
+
+  roshan_status_text = text_layer_create(
+        (GRect) { .origin = { 0, 90 }, .size = { bounds.size.w - 14, 60 } });
+  text_layer_set_text(roshan_status_text, "ALIVE");
+  text_layer_set_text_alignment(roshan_status_text, GTextAlignmentCenter);
+  text_layer_set_font(roshan_status_text,
+      fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(roshan_status_text));
 
   action_bar = action_bar_layer_create();
   action_bar_layer_add_to_window(action_bar, window);
@@ -126,6 +168,7 @@ static void init(void) {
   const bool animated = true;
   // Al principio, no estamos ejecutando.
   started = false;
+  paused = false;
   // Registro el timer.
   tick_timer_service_subscribe(SECOND_UNIT, (TickHandler) tick_handler);
   window_stack_push(window, animated);
