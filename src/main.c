@@ -54,13 +54,20 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   started = !started;
-  if (!started)
+  if (!started) {
+    // Desaparecen los iconos de pausa / roshan.
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
     return;
+  }
+
   start_time = seconds();
 
   // Aparecen los iconos de pausa / roshan.
   action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_pause);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_roshan);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_stop);
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -83,11 +90,11 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
 
   main_text = text_layer_create(
-      (GRect) { .origin = { 0, 3 }, .size = { bounds.size.w, 60 } });
-  text_layer_set_text(main_text, "START");
+      (GRect) { .origin = { 0, 3 }, .size = { bounds.size.w - 14, 60 } });
+  text_layer_set_text(main_text, "00:00");
   text_layer_set_text_alignment(main_text, GTextAlignmentCenter);
   text_layer_set_font(main_text,
-      fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+      fonts_get_system_font(FONT_KEY_BITHAM_34_MEDIUM_NUMBERS));
   layer_add_child(window_layer, text_layer_get_layer(main_text));
 
   action_bar = action_bar_layer_create();
