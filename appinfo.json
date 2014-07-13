@@ -12,6 +12,25 @@
     "dummy": 0
   },
   "resources": {
-    "media": []
+    "media": [{
+      "type": "png",
+      "name": "IMAGE_BUTTON_PAUSE",
+      "file": "images/pause.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_BUTTON_ROSHAN",
+      "file": "images/roshan.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_BUTTON_STOP",
+      "file": "images/stop.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_BUTTON_START",
+      "file": "images/start.png"
+      }]
   }
 }
