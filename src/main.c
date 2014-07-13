@@ -1,7 +1,9 @@
 #include <pebble.h>
+#include "dota2timer.h"
 
 // Constantes.
 #define TIME_BUFFER_SIZE 6
+#define ROSHAN_STATUS_BUFFER_SIZE 6
 
 // RECURSOS DE UI:
 // Ventana principal.
@@ -29,23 +31,23 @@ static GBitmap* button_image_stop;
 // Búfer de texto para el tiempo transcurrido.
 static char buffer[TIME_BUFFER_SIZE];
 
+static char roshan_status_buffer[ROSHAN_STATUS_BUFFER_SIZE];
+
 // Tiempo en el que se inicia el cronómetro.
 static int start_time;
+
+// Segundo en el que mataron a Roshan.
+static int roshan_killed_time;
 
 // Estado del timer.
 static bool started;
 static bool paused;
 
+// Probabilidad de que Roshan esté vivo, en porcentaje.
+static int roshan_status;
+
 // Tiempo que transcurrió desde el arranque.
 static int elapsed_time;
-
-// TODO mover a otro lado.
-// Helper para obtener los segundos transcurridos
-int seconds() {
-  time_t seconds;
-  seconds = time(NULL);
-  return (int)seconds;
-}
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (!started)
@@ -101,8 +103,10 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //text_layer_set_text(main_text, "Down");
-
+  roshan_status = ROSHAN_DEAD;
+  get_string_for_roshan(roshan_status, roshan_status_buffer);
+  APP_LOG(APP_LOG_LEVEL_ERROR, "%s", roshan_status_buffer);
+  text_layer_set_text(roshan_status_text, roshan_status_buffer);
 }
 
 static void click_config_provider(void *context) {
@@ -128,12 +132,12 @@ static void window_load(Window *window) {
   text_layer_set_text(roshan_label, "Roshan");
   text_layer_set_text_alignment(roshan_label, GTextAlignmentCenter);
   text_layer_set_font(roshan_label,
-      fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+      fonts_get_system_font(FONT_KEY_GOTHIC_14));
   layer_add_child(window_layer, text_layer_get_layer(roshan_label));
 
   roshan_status_text = text_layer_create(
         (GRect) { .origin = { 0, 90 }, .size = { bounds.size.w - 14, 60 } });
-  text_layer_set_text(roshan_status_text, "ALIVE");
+  text_layer_set_text(roshan_status_text, "--");
   text_layer_set_text_alignment(roshan_status_text, GTextAlignmentCenter);
   text_layer_set_font(roshan_status_text,
       fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
@@ -169,6 +173,7 @@ static void init(void) {
   // Al principio, no estamos ejecutando.
   started = false;
   paused = false;
+  roshan_status = ROSHAN_ALIVE;
   // Registro el timer.
   tick_timer_service_subscribe(SECOND_UNIT, (TickHandler) tick_handler);
   window_stack_push(window, animated);
