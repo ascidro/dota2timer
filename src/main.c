@@ -57,10 +57,23 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (paused)
     start_time++;
 
+  // Calculo las posibilidades de que Roshan esté vivo.
+  if (roshan_status < ROSHAN_ALIVE) {
+    int roshan_killed_elapsed = seconds() - roshan_killed_time;
+    if (roshan_killed_elapsed > ROSHAN_RESPAWN_TIME_LOWER)
+      roshan_status = (roshan_killed_elapsed - ROSHAN_RESPAWN_TIME_LOWER) * 100
+          / (ROSHAN_RESPAWN_TIME_UPPER - ROSHAN_RESPAWN_TIME_LOWER);
+    if (roshan_status > ROSHAN_ALIVE)
+      roshan_status = ROSHAN_ALIVE;
+    get_string_for_roshan(roshan_status, roshan_status_buffer);
+    text_layer_set_text(roshan_status_text, roshan_status_buffer);
+  }
+
   elapsed_time = seconds() - start_time;
   int minutes = elapsed_time / 60;
   int seconds = elapsed_time % 60;
 
+  // Si está pausado, que titile una vez por segundo.
   if (paused && start_time % 2 == 0)
     buffer[0] = '\0';
   else
@@ -78,15 +91,18 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, NULL);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
+    text_layer_set_text(roshan_status_text, "--");
     return;
   }
 
   start_time = seconds();
+  roshan_status = ROSHAN_ALIVE;
 
   // Aparecen los iconos de pausa / roshan.
   action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_pause);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_roshan);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_stop);
+  text_layer_set_text(roshan_status_text, "ALIVE");
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -104,8 +120,8 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   roshan_status = ROSHAN_DEAD;
+  roshan_killed_time = seconds();
   get_string_for_roshan(roshan_status, roshan_status_buffer);
-  APP_LOG(APP_LOG_LEVEL_ERROR, "%s", roshan_status_buffer);
   text_layer_set_text(roshan_status_text, roshan_status_buffer);
 }
 
@@ -124,7 +140,7 @@ static void window_load(Window *window) {
   text_layer_set_text(main_text, "00:00");
   text_layer_set_text_alignment(main_text, GTextAlignmentCenter);
   text_layer_set_font(main_text,
-      fonts_get_system_font(FONT_KEY_BITHAM_34_MEDIUM_NUMBERS));
+      fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
   layer_add_child(window_layer, text_layer_get_layer(main_text));
 
   roshan_label = text_layer_create(
@@ -173,7 +189,7 @@ static void init(void) {
   // Al principio, no estamos ejecutando.
   started = false;
   paused = false;
-  roshan_status = ROSHAN_ALIVE;
+
   // Registro el timer.
   tick_timer_service_subscribe(SECOND_UNIT, (TickHandler) tick_handler);
   window_stack_push(window, animated);
