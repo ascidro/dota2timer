@@ -5,6 +5,7 @@
   "companyName": "#NSoft",
   "versionCode": 1,
   "versionLabel": "0.0.1",
+  "capabilities": [ "configurable" ],
   "watchapp": {
     "watchface": false
   },
