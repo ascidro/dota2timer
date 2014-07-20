@@ -1,7 +1,7 @@
 Pebble.addEventListener("showConfiguration",
   function(e) {
     console.log("Showing configuration");
-    Pebble.openURL("http://google.com");
+    Pebble.openURL("http://julia/config.html");
   }
 );
 

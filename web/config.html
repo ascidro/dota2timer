@@ -31,21 +31,21 @@
       </div>
       <div class="row">
         <div class="col-md-7 col-xs-7">
-          <label for="53alert">Vibrate on '53 minute mark</label>
+          <label for="alert53">Vibrate on '53 minute mark</label>
           <p class="desc">Reminds you when to stack most creeps</p>
         </div>
         <div class="col-md-5 col-xs-5 checkbox">
-          <input type="checkbox" id="53alert" />
+          <input type="checkbox" id="alert53" />
         </div>
       </div>
       <div class="row">
         <div class="col-md-3 col-xs-3">
         </div>
         <div class="col-md-3 col-xs-3">
-          <button class="btn btn-block btn-lg btn-danger">Cancel</button>
+          <button class="btn btn-block btn-lg btn-danger" id="cancel">Cancel</button>
         </div>
         <div class="col-md-3 col-xs-3" style="text-align: right;">
-          <button class="btn btn-block btn-lg btn-primary">Save</button>
+          <button class="btn btn-block btn-lg btn-primary" id="save">Save</button>
         </div>
       </div>
     </div>
@@ -57,7 +57,43 @@
     <script src="js/bootstrap-switch.min.js"></script>
     
     <script type="text/javascript">
-      $("[type='checkbox']").bootstrapSwitch();
+      var payload = {
+        isCancel: false,
+        alert53: getUrlParameter('alert53')
+      };
+      if (payload.alert53 == null)
+        payload.alert53 = false;
+    
+      // Button initialization.
+      $("#alert53").bootstrapSwitch('state', payload.alert53 == 'true');
+      
+      // Button bindings.
+      $("#alert53").on('switchChange.bootstrapSwitch', function(event, state) {
+        payload.alert53 = state;
+      });
+    
+      $("#cancel").click(function() {
+        payload.isCancel = true;
+        window.location.href = "pebblejs://close#" + JSON.stringify(payload);
+      });
+      
+      $("#save").click(function () {
+        payload.isCancel = false;
+        window.location.href = "pebblejs://close#" + JSON.stringify(payload);
+      });
+      
+      function getUrlParameter(sParam) {
+          var sPageURL = window.location.search.substring(1);
+          var sURLVariables = sPageURL.split('&');
+          for (var i = 0; i < sURLVariables.length; i++) 
+          {
+              var sParameterName = sURLVariables[i].split('=');
+              if (sParameterName[0] == sParam) 
+              {
+                  return sParameterName[1];
+              }
+          }
+      }
     </script>
   </body>
 </html>
