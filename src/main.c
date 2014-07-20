@@ -144,7 +144,7 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(main_text));
 
   roshan_label = text_layer_create(
-        (GRect) { .origin = { 0, 50 }, .size = { bounds.size.w - 14, 60 } });
+        (GRect) { .origin = { 0, 76 }, .size = { bounds.size.w - 14, 60 } });
   text_layer_set_text(roshan_label, "Roshan");
   text_layer_set_text_alignment(roshan_label, GTextAlignmentCenter);
   text_layer_set_font(roshan_label,
