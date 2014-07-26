@@ -10,7 +10,8 @@
     "watchface": false
   },
   "appKeys": {
-    "dummy": 0
+    "isCancel": 0,
+    "alert53": 1
   },
   "resources": {
     "media": [{

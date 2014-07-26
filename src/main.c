@@ -1,10 +1,6 @@
 #include <pebble.h>
 #include "dota2timer.h"
 
-// Constantes.
-#define TIME_BUFFER_SIZE 6
-#define ROSHAN_STATUS_BUFFER_SIZE 6
-
 // RECURSOS DE UI:
 // Ventana principal.
 static Window *window;
@@ -49,6 +45,12 @@ static int roshan_status;
 // Tiempo que transcurrió desde el arranque.
 static int elapsed_time;
 
+// VARIABLES DE CONFIGURACIÓN:
+enum config_keys {
+  ISCANCEL, ALERT53
+};
+static bool alert53;
+
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (!started)
     return;
@@ -57,9 +59,24 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (paused)
     start_time++;
 
+  elapsed_time = seconds() - start_time;
+  int minutes = elapsed_time / 60;
+  int seconds_elapsed = elapsed_time % 60;
+
+  // Si está pausado, que titile una vez por segundo.
+  if (paused && start_time % 2 == 0)
+    buffer[0] = '\0';
+  else   // Si no, mostrar la hora normalmente.
+    snprintf(buffer, 6, "%02d:%02d", minutes, seconds_elapsed);
+
+  text_layer_set_text(main_text, buffer);
+
+  if (paused)
+    return;
+
   // Calculo las posibilidades de que Roshan esté vivo.
   if (roshan_status < ROSHAN_ALIVE) {
-    int roshan_killed_elapsed = seconds() - roshan_killed_time;
+    int roshan_killed_elapsed = elapsed_time - roshan_killed_time;
     if (roshan_killed_elapsed > ROSHAN_RESPAWN_TIME_LOWER)
       roshan_status = (roshan_killed_elapsed - ROSHAN_RESPAWN_TIME_LOWER) * 100
           / (ROSHAN_RESPAWN_TIME_UPPER - ROSHAN_RESPAWN_TIME_LOWER);
@@ -69,17 +86,8 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     text_layer_set_text(roshan_status_text, roshan_status_buffer);
   }
 
-  elapsed_time = seconds() - start_time;
-  int minutes = elapsed_time / 60;
-  int seconds = elapsed_time % 60;
-
-  // Si está pausado, que titile una vez por segundo.
-  if (paused && start_time % 2 == 0)
-    buffer[0] = '\0';
-  else
-    snprintf(buffer, 6, "%02d:%02d", minutes, seconds);
-
-  text_layer_set_text(main_text, buffer);
+  if (alert53 && elapsed_time % 60 == 53)
+    vibes_short_pulse();
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -120,9 +128,25 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   roshan_status = ROSHAN_DEAD;
-  roshan_killed_time = seconds();
+  roshan_killed_time = seconds() - start_time;;
   get_string_for_roshan(roshan_status, roshan_status_buffer);
   text_layer_set_text(roshan_status_text, roshan_status_buffer);
+}
+
+static void in_received_handler(DictionaryIterator *received, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Received data");
+  Tuple *alert_tuple = dict_find(received, ALERT53);
+
+  if (alert_tuple) {
+    alert53 = strcmp(alert_tuple->value->cstring, "true") == 0;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Alert status: %d", alert53);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_INFO, "It was unknown data");
+  }
+}
+
+static void in_dropped_handler(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped: %d", reason);
 }
 
 static void click_config_provider(void *context) {
@@ -172,11 +196,21 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Starting app...");
+  // Registrar el handler de entrada de mensajes.
+  app_message_register_inbox_received(in_received_handler);
+  app_message_register_inbox_dropped(in_dropped_handler);
+
+  app_message_open(INBOUND_SIZE, OUTBOUND_SIZE);
+
   // Cargo los bitmaps.
   button_image_pause = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_PAUSE);
   button_image_roshan = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_ROSHAN);
   button_image_start = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_START);
   button_image_stop = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_STOP);
+
+  // Cargo la configuración por defecto.
+  alert53 = false;
 
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
