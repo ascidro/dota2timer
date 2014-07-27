@@ -13,13 +13,11 @@ Pebble.addEventListener("webviewclosed", function(e) {
   console.log("Sending message to the app: " + JSON.stringify(config));
   Pebble.sendAppMessage(config);
   console.log("Sent");
+  localStorage.config = JSON.stringify(config);
 });
 
 Pebble.addEventListener("ready", function(e) {
   console.log("Launching app");
-  localStorage.config = JSON.stringify({
-      alert53: "false"
-  }); 
   if (localStorage.config != undefined) {
     console.log("Sending message to the app: " + localStorage.config);
     Pebble.sendAppMessage(JSON.parse(localStorage.config));
