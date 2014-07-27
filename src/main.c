@@ -49,9 +49,12 @@ static int elapsed_time;
 
 // VARIABLES DE CONFIGURACIÓN:
 enum config_keys {
-  ISCANCEL, ALERT53
+  ISCANCEL, ALERT53, ALERT_COURIER
 };
+// Pulsación corta en el "53.
 static bool alert53;
+// Doble pulsación en el 03:00.
+static bool alert_courier;
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (!started)
@@ -86,8 +89,11 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     text_layer_set_text(roshan_status_text, roshan_status_buffer);
   }
 
-  if (alert53 && elapsed_time % 60 == 53)
+  if (alert53 && elapsed_time % 60 == STACK_MARK)
     vibes_short_pulse();
+
+  if (alert_courier && elapsed_time == COURIER_UPGRADE_TIME)
+    vibes_double_pulse();
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -158,12 +164,19 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void in_received_handler(DictionaryIterator *received, void *context) {
   // Recibida configuración, almacenar los datos.
   APP_LOG(APP_LOG_LEVEL_INFO, "Received data");
-  Tuple *alert_tuple = dict_find(received, ALERT53);
+  Tuple *alert53_tuple = dict_find(received, ALERT53);
+  Tuple *alert_courier_tuple = dict_find(received, ALERT_COURIER);
 
-  if (alert_tuple) {
-    alert53 = strcmp(alert_tuple->value->cstring, "true") == 0;
+  if (alert53_tuple) {
+    alert53 = strcmp(alert53_tuple->value->cstring, "true") == 0;
     persist_write_bool(ALERT53, alert53);
-    APP_LOG(APP_LOG_LEVEL_INFO, "Alert status: %d", alert53);
+    APP_LOG(APP_LOG_LEVEL_INFO, "53\" alert status: %d", alert53);
+  }
+
+  if (alert_courier_tuple) {
+    alert_courier = strcmp(alert_courier_tuple->value->cstring, "true") == 0;
+    persist_write_bool(ALERT_COURIER, alert_courier);
+    APP_LOG(APP_LOG_LEVEL_INFO, "Courier alert status: %d", alert_courier);
   }
 }
 
@@ -231,6 +244,7 @@ static void init(void) {
 
   // Cargo la configuración.
   alert53 = persist_exists(ALERT53) ? persist_read_bool(ALERT53) : false;
+  alert_courier = persist_exists(ALERT_COURIER) ? persist_read_bool(ALERT_COURIER) : false;
 
   app_message_register_inbox_received(in_received_handler);
   app_message_register_inbox_dropped(in_dropped_handler);

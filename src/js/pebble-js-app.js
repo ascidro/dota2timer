@@ -27,7 +27,8 @@ Pebble.addEventListener("ready", function(e) {
   } else {
     console.log("No config to send, resetting config");
     localStorage.config = JSON.stringify({
-        alert53: false
+        alert53: false,
+        alert_courier: false
     });
   }
 });

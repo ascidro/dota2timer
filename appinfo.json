@@ -11,7 +11,8 @@
   },
   "appKeys": {
     "isCancel": 0,
-    "alert53": 1
+    "alert53": 1,
+    "alert_courier": 2
   },
   "resources": {
     "media": [{
