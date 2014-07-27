@@ -67,6 +67,9 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   }
 
   elapsed_time = seconds() - start_time;
+  if (elapsed_time == MAX_TIME - 1)
+    start_time += MAX_TIME;
+
   get_string_for_time(elapsed_time, buffer);
   text_layer_set_text(main_text, buffer);
 
