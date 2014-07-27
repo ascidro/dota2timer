@@ -1,6 +1,8 @@
 Pebble.addEventListener("showConfiguration", function(e) {
   console.log("Showing configuration");
-  Pebble.openURL("http://julia/pebble/config.html");
+  var config = localStorage.config;
+  console.log(encodeURIComponent(config));
+  Pebble.openURL("http://julia/pebble/config.html?data=" + encodeURIComponent(config));
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
@@ -25,7 +27,7 @@ Pebble.addEventListener("ready", function(e) {
   } else {
     console.log("No config to send, resetting config");
     localStorage.config = JSON.stringify({
-        alert53: "false"
+        alert53: false
     });
   }
 });

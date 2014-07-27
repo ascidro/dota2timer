@@ -57,15 +57,21 @@
     <script src="js/bootstrap-switch.min.js"></script>
     
     <script type="text/javascript">
-      var payload = {
-        isCancel: false,
-        alert53: getUrlParameter('alert53')
-      };
+      var payload;
+      if (getUrlParameter('data') == null) {
+        payload = {
+          isCancel: false,
+          alert53: getUrlParameter('alert53')
+        };
+      } else {
+        payload = JSON.parse(decodeURIComponent(getUrlParameter('data')));
+      }
+      
       if (payload.alert53 == null)
         payload.alert53 = false;
     
       // Button initialization.
-      $("#alert53").bootstrapSwitch('state', payload.alert53 == 'true');
+      $("#alert53").bootstrapSwitch('state', payload.alert53 == true);
       
       // Button bindings.
       $("#alert53").on('switchChange.bootstrapSwitch', function(event, state) {
