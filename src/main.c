@@ -143,14 +143,14 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void in_received_handler(DictionaryIterator *received, void *context) {
+  // Recibida configuración, almacenar los datos.
   APP_LOG(APP_LOG_LEVEL_INFO, "Received data");
   Tuple *alert_tuple = dict_find(received, ALERT53);
 
   if (alert_tuple) {
     alert53 = strcmp(alert_tuple->value->cstring, "true") == 0;
+    persist_write_bool(ALERT53, alert53);
     APP_LOG(APP_LOG_LEVEL_INFO, "Alert status: %d", alert53);
-  } else {
-    APP_LOG(APP_LOG_LEVEL_INFO, "It was unknown data");
   }
 }
 
@@ -207,6 +207,10 @@ static void window_unload(Window *window) {
 static void init(void) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Starting app...");
   // Registrar el handler de entrada de mensajes.
+
+  // Cargo la configuración.
+  alert53 = persist_exists(ALERT53) ? persist_read_bool(ALERT53) : false;
+
   app_message_register_inbox_received(in_received_handler);
   app_message_register_inbox_dropped(in_dropped_handler);
 
@@ -217,9 +221,6 @@ static void init(void) {
   button_image_roshan = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_ROSHAN);
   button_image_start = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_START);
   button_image_stop = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_STOP);
-
-  // Cargo la configuración por defecto.
-  alert53 = false;
 
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
