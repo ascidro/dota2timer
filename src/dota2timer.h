@@ -30,4 +30,7 @@ void get_string_for_roshan(unsigned int roshan_status, char* s);
 // Helper para obtener los segundos transcurridos.
 int seconds(void);
 
+// Prints the elapsed time in a human readable format on the specified buffer.
+void get_string_for_time(int elapsed_time, char *s);
+
 #endif /* DOTA2TIMER_H_ */

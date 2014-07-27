@@ -22,6 +22,8 @@ static GBitmap* button_image_pause;
 static GBitmap* button_image_roshan;
 static GBitmap* button_image_start;
 static GBitmap* button_image_stop;
+static GBitmap* button_image_add;
+static GBitmap* button_image_substract;
 
 // VARIABLES DE ESTADO:
 // Búfer de texto para el tiempo transcurrido.
@@ -60,14 +62,12 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     start_time++;
 
   elapsed_time = seconds() - start_time;
-  int minutes = elapsed_time / 60;
-  int seconds_elapsed = elapsed_time % 60;
 
   // Si está pausado, que titile una vez por segundo.
   if (paused && start_time % 2 == 0)
     buffer[0] = '\0';
   else   // Si no, mostrar la hora normalmente.
-    snprintf(buffer, 6, "%02d:%02d", minutes, seconds_elapsed);
+    get_string_for_time(elapsed_time, buffer);
 
   text_layer_set_text(main_text, buffer);
 
@@ -91,8 +91,13 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (paused)
+  // Si está pausado, permitir acomodar el temporizador hacia adelante.
+  if (paused) {
+    --start_time;
+    get_string_for_time(++elapsed_time, buffer);
+    text_layer_set_text(main_text, buffer);
     return;
+  }
   started = !started;
   if (!started) {
     // Desaparecen los iconos de pausa / roshan.
@@ -119,9 +124,9 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
   paused = !paused;
   if (paused) {
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_add);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_substract);
     return;
   }
   action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_stop);
@@ -133,8 +138,16 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (!started)
     return;
 
-  if (paused)
+  // Si está pausado, permitir acomodar el temporizador hacia atrás.
+  if (paused) {
+    // Evitamos el comportamiento no definido de tener un temporizador negativo.
+    if (elapsed_time <= 0)
+      return;
+    ++start_time;
+    get_string_for_time(--elapsed_time, buffer);
+    text_layer_set_text(main_text, buffer);
     return;
+  }
 
   roshan_status = ROSHAN_DEAD;
   roshan_killed_time = seconds() - start_time;;
@@ -221,6 +234,8 @@ static void init(void) {
   button_image_roshan = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_ROSHAN);
   button_image_start = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_START);
   button_image_stop = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_STOP);
+  button_image_add = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_ADD);
+  button_image_substract = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BUTTON_SUBSTRACT);
 
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {

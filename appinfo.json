@@ -36,6 +36,16 @@
       },
       {
       "type": "png",
+      "name": "IMAGE_BUTTON_ADD",
+      "file": "images/add.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_BUTTON_SUBSTRACT",
+      "file": "images/substract.png"
+      },
+      {
+      "type": "png",
       "name": "IMAGE_DOTA_LOGO",
       "file": "images/dota2logo.png",
       "menuIcon": true
