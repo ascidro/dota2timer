@@ -60,22 +60,15 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if (!started)
     return;
 
-  // Adelantamos el tiempo de arranque para compensar por la pausa.
-  if (paused)
+  if (paused) {
+    // Adelantamos el tiempo de arranque para compensar por la pausa.
     start_time++;
+    return;
+  }
 
   elapsed_time = seconds() - start_time;
-
-  // Si está pausado, que titile una vez por segundo.
-  if (paused && start_time % 2 == 0)
-    buffer[0] = '\0';
-  else   // Si no, mostrar la hora normalmente.
-    get_string_for_time(elapsed_time, buffer);
-
+  get_string_for_time(elapsed_time, buffer);
   text_layer_set_text(main_text, buffer);
-
-  if (paused)
-    return;
 
   // Calculo las posibilidades de que Roshan esté vivo.
   if (roshan_status < ROSHAN_ALIVE) {
