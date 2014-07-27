@@ -31,11 +31,22 @@
       </div>
       <div class="row">
         <div class="col-md-7 col-xs-7">
-          <label for="alert53">Vibrate on '53</label>
-          <p class="desc">Reminds you when to stack most creep camps</p>
+          <label for="alert53">Pulse on "53</label>
+          <p class="desc">Camp creep stacking mark</p>
+          <p class="desc alternative">NO STACK GG FF PLZ</p>
         </div>
         <div class="col-md-5 col-xs-5 checkbox">
           <input type="checkbox" id="alert53" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-7 col-xs-7">
+          <label for="alert53">Double pulse on 03:00</label>
+          <p class="desc">Courier upgrade available</p>
+          <p class="desc alternative">UPGRD COURIER NOOB CM</p>
+        </div>
+        <div class="col-md-5 col-xs-5 checkbox">
+          <input type="checkbox" id="alert_courier" />
         </div>
       </div>
       <div class="row">
@@ -55,13 +66,16 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-switch.min.js"></script>
+    <!-- The lulz -->
+    <script src="js/konami.js"></script>
     
     <script type="text/javascript">
       var payload;
       if (getUrlParameter('data') == null) {
         payload = {
           isCancel: false,
-          alert53: getUrlParameter('alert53')
+          alert53: false,
+          alert_courier: false
         };
       } else {
         payload = JSON.parse(decodeURIComponent(getUrlParameter('data')));
@@ -71,11 +85,15 @@
         payload.alert53 = false;
     
       // Button initialization.
-      $("#alert53").bootstrapSwitch('state', payload.alert53 == true);
+      $("#alert53").bootstrapSwitch('state', payload.alert53);
+      $("#alert_courier").bootstrapSwitch('state', payload.alert_courier);
       
       // Button bindings.
       $("#alert53").on('switchChange.bootstrapSwitch', function(event, state) {
         payload.alert53 = state;
+      });
+      $("#alert_courier").on('switchChange.bootstrapSwitch', function(event, state) {
+        payload.alert_courier = state;
       });
     
       $("#cancel").click(function() {
@@ -87,6 +105,8 @@
         payload.isCancel = false;
         window.location.href = "pebblejs://close#" + JSON.stringify(payload);
       });
+      
+      var easter_egg = new Konami(function() { $(".alternative").show(); });
       
       function getUrlParameter(sParam) {
           var sPageURL = window.location.search.substring(1);

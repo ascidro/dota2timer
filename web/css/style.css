@@ -5,3 +5,6 @@
 div.checkbox {
   text-align: right;
 }
+.alternative {
+  display: none;
+}
