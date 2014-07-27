@@ -90,15 +90,15 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     vibes_short_pulse();
 }
 
-static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (paused)
     return;
   started = !started;
   if (!started) {
     // Desaparecen los iconos de pausa / roshan.
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_start);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, NULL);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
     text_layer_set_text(roshan_status_text, "--");
     return;
   }
@@ -107,26 +107,35 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   roshan_status = ROSHAN_ALIVE;
 
   // Aparecen los iconos de pausa / roshan.
-  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_pause);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_stop);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_pause);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_roshan);
-  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_stop);
   text_layer_set_text(roshan_status_text, "ALIVE");
 }
 
-static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (!started)
+    return;
+
   paused = !paused;
   if (paused) {
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_start);
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, NULL);
+    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, NULL);
     return;
   }
-  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_pause);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_stop);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_pause);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, button_image_roshan);
-  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_stop);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (!started)
+    return;
+
+  if (paused)
+    return;
+
   roshan_status = ROSHAN_DEAD;
   roshan_killed_time = seconds() - start_time;;
   get_string_for_roshan(roshan_status, roshan_status_buffer);
@@ -186,7 +195,7 @@ static void window_load(Window *window) {
   action_bar = action_bar_layer_create();
   action_bar_layer_add_to_window(action_bar, window);
   // Al principio solo muestro el icono de start.
-  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, button_image_start);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, button_image_start);
   // Registro los botones.
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
 }
