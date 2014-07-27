@@ -2,7 +2,7 @@
   "uuid": "cf6dfdc6-4285-4ec8-aeac-55f373354143",
   "shortName": "Dota timer",
   "longName": "Dota timer",
-  "companyName": "#NSoft",
+  "companyName": "Satragno Software",
   "versionCode": 1,
   "versionLabel": "0.0.1",
   "capabilities": [ "configurable" ],
@@ -33,6 +33,12 @@
       "type": "png",
       "name": "IMAGE_BUTTON_START",
       "file": "images/start.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_DOTA_LOGO",
+      "file": "images/dota2logo.png",
+      "menuIcon": true
       }]
   }
 }
