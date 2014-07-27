@@ -198,7 +198,7 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(roshan_label));
 
   roshan_status_text = text_layer_create(
-        (GRect) { .origin = { 0, 90 }, .size = { bounds.size.w - 14, 60 } });
+        (GRect) { .origin = { 0, 90 }, .size = { bounds.size.w - 20, 60 } });
   text_layer_set_text(roshan_status_text, "--");
   text_layer_set_text_alignment(roshan_status_text, GTextAlignmentCenter);
   text_layer_set_font(roshan_status_text,
@@ -215,6 +215,14 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
   text_layer_destroy(main_text);
+  text_layer_destroy(roshan_label);
+  text_layer_destroy(roshan_status_text);
+  gbitmap_destroy(button_image_pause);
+  gbitmap_destroy(button_image_roshan);
+  gbitmap_destroy(button_image_start);
+  gbitmap_destroy(button_image_stop);
+  gbitmap_destroy(button_image_add);
+  gbitmap_destroy(button_image_substract);
 }
 
 static void init(void) {
