@@ -21,11 +21,14 @@
 #define ROSHAN_ALIVE 100
 #define ROSHAN_DEAD 0
 
-/*#define ROSHAN_RESPAWN_TIME_LOWER 480
-#define ROSHAN_RESPAWN_TIME_UPPER 660*/
+#define ROSHAN_RESPAWN_TIME_LOWER 480
+#define ROSHAN_RESPAWN_TIME_UPPER 660
 
+// Valores para pruebas.
+/*
 #define ROSHAN_RESPAWN_TIME_LOWER 10
 #define ROSHAN_RESPAWN_TIME_UPPER 20
+*/
 
 // Devuelve un string con el estado de Roshan.
 void get_string_for_roshan(unsigned int roshan_status, char* s);

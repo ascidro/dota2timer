@@ -2,7 +2,7 @@ Pebble.addEventListener("showConfiguration", function(e) {
   console.log("Showing configuration");
   var config = localStorage.config;
   console.log(encodeURIComponent(config));
-  Pebble.openURL("http://julia/pebble/config.html?data=" + encodeURIComponent(config));
+  Pebble.openURL("http://satragno.com/dota2timer/config.html?data=" + encodeURIComponent(config));
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
